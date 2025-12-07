@@ -1,4 +1,4 @@
-# Social Media Deepfake Detection Project
+# 🔍 Social Media Deepfake Detection 
 
 ## 🎯 Project Overview
 
@@ -27,7 +27,7 @@ deepfake_detection_project/
 ├── 📁 docs/                    # Documentation
 ├── 📄 requirements.txt         # Python dependencies
 ├── 📄 setup.py                 # Project setup
-└── 📄 README.md               # This file
+└── 📄 README.md                # This file
 ```
 
 ## 🛠️ Installation Guide (Step by Step)
@@ -180,3 +180,4 @@ This project is for educational purposes. Please respect the licenses of the dat
 **Happy Learning! 🎉**
 
 Start with the web interface to see the project in action, then dive into the code to understand how it works!
+
