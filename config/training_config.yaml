@@ -1,0 +1,183 @@
+# Training Configuration for Deepfake Detection Model
+# This file contains all the parameters needed for training the model
+
+# Model Configuration
+model:
+  type: 'efficientnet'  # Options: efficientnet, resnet, vit, custom_cnn, ensemble
+  params:
+    model_name: 'efficientnet_b4'  # For EfficientNet: efficientnet_b0-b7
+    num_classes: 2
+    pretrained: true
+    dropout_rate: 0.5
+
+# Training Configuration
+training:
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.001
+  num_workers: 4
+  
+  # Optimizer Configuration
+  optimizer:
+    name: 'adamw'  # Options: adam, adamw, sgd
+    weight_decay: 1e-4
+    momentum: 0.9  # Only for SGD
+  
+  # Learning Rate Scheduler
+  scheduler:
+    name: 'cosine'  # Options: step, cosine, plateau
+    step_size: 30  # For step scheduler
+    gamma: 0.1  # For step scheduler
+    T_max: 50  # For cosine scheduler
+    factor: 0.1  # For plateau scheduler
+    patience: 10  # For plateau scheduler
+  
+  # Loss Function
+  criterion:
+    name: 'cross_entropy'  # Options: cross_entropy, focal
+    class_weights: [1.0, 1.0]  # [real_weight, fake_weight] for class imbalance
+    alpha: 1.0  # For focal loss
+    gamma: 2.0  # For focal loss
+  
+  # Early Stopping
+  patience: 20
+  
+  # Mixed Precision Training
+  use_amp: true  # Automatic Mixed Precision
+  
+  # Gradient Clipping
+  gradient_clip: 1.0
+
+# Data Configuration
+data:
+  input_size: [224, 224]  # [height, width]
+  face_detector: 'mtcnn'  # Options: mtcnn, dlib
+  max_faces_per_video: 10
+  frame_rate: 1  # Frames per second to extract from videos
+  
+  # Data Augmentation
+  augmentation:
+    horizontal_flip: true
+    vertical_flip: false
+    rotation: 15
+    brightness_contrast: true
+    noise: true
+    blur: true
+    distortion: true
+
+# Validation Configuration
+validation:
+  frequency: 1  # Validate every N epochs
+  save_best: true
+  metrics: ['accuracy', 'precision', 'recall', 'f1_score', 'roc_auc']
+
+# Checkpointing
+checkpointing:
+  save_frequency: 5  # Save checkpoint every N epochs
+  keep_last: 3  # Keep last N checkpoints
+  save_optimizer: true
+  save_scheduler: true
+
+# Logging Configuration
+logging:
+  level: 'INFO'  # Options: DEBUG, INFO, WARNING, ERROR
+  tensorboard: true
+  wandb: false  # Weights & Biases integration
+  wandb_project: 'deepfake-detection'
+  wandb_entity: 'your-username'
+
+# Output Configuration
+output_dir: 'outputs/training_run_1'
+save_model: true
+save_predictions: true
+save_plots: true
+
+# Hardware Configuration
+hardware:
+  device: 'auto'  # Options: auto, cuda, cpu
+  gpu_ids: [0]  # List of GPU IDs to use
+  pin_memory: true
+  deterministic: false  # For reproducible results
+
+# Advanced Configuration
+advanced:
+  # Gradient Accumulation
+  gradient_accumulation_steps: 1
+  
+  # Model Parallelism
+  use_distributed: false
+  world_size: 1
+  rank: 0
+  
+  # Memory Optimization
+  empty_cache_freq: 10  # Empty GPU cache every N epochs
+  
+  # Debug Mode
+  debug: false
+  debug_samples: 100  # Number of samples to use in debug mode
+
+# Ensemble Configuration (if using ensemble model)
+ensemble:
+  models:
+    - type: 'efficientnet'
+      params:
+        model_name: 'efficientnet_b4'
+    - type: 'resnet'
+      params:
+        model_name: 'resnet50'
+    - type: 'vit'
+      params:
+        model_name: 'vit_base_patch16_224'
+  ensemble_method: 'weighted_average'  # Options: average, weighted_average
+
+# Hyperparameter Optimization
+hyperopt:
+  enabled: false
+  trials: 100
+  max_evals: 50
+  space:
+    learning_rate:
+      type: 'loguniform'
+      min: 1e-5
+      max: 1e-2
+    batch_size:
+      type: 'choice'
+      options: [16, 32, 64]
+    dropout_rate:
+      type: 'uniform'
+      min: 0.1
+      max: 0.7
+
+# Testing Configuration
+testing:
+  test_on_best: true
+  test_metrics: ['accuracy', 'precision', 'recall', 'f1_score', 'roc_auc', 'confusion_matrix']
+  save_test_results: true
+  generate_report: true
+
+# Model Interpretability
+interpretability:
+  grad_cam: true
+  attention_visualization: true
+  feature_importance: true
+  saliency_maps: true
+
+# Performance Monitoring
+monitoring:
+  memory_tracking: true
+  gpu_utilization: true
+  training_speed: true
+  model_size: true
+
+# Security and Privacy
+security:
+  model_encryption: false
+  data_anonymization: false
+  secure_training: false
+
+# Deployment Configuration
+deployment:
+  model_format: 'pytorch'  # Options: pytorch, onnx, tensorrt
+  quantization: false
+  optimization: false
+  target_platform: 'cpu'  # Options: cpu, gpu, mobile

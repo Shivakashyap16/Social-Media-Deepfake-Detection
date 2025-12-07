@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepfake Detection - AI-Powered Media Analysis</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #0066ff;
+            --primary-dark: #0052cc;
+            --primary-light: #3385ff;
+            --secondary-color: #00d4ff;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-color: #1f2937;
+            --dark-secondary: #374151;
+            --light-color: #f9fafb;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow-x: hidden;
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        /* Smooth scrolling for the entire page */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Enhanced focus states for accessibility */
+        *:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        .main-container {
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin: 2rem auto;
+            max-width: 1200px;
+            animation: containerFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        @keyframes containerFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            opacity: 0.95;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+        }
+
+        .upload-section {
+            padding: 3rem;
+            text-align: center;
+            background: var(--white);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--gray-300);
+            border-radius: 16px;
+            padding: 4rem 3rem;
+            background: var(--gray-50);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .upload-area:hover::before {
+            left: 100%;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 102, 255, 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 102, 255, 0.15);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background: rgba(0, 102, 255, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 102, 255, 0.25);
+        }
+
+        .link-upload-area {
+            border: 3px dashed var(--primary-color);
+            border-radius: 15px;
+            padding: 3rem;
+            background: var(--light-color);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .link-upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .link-upload-area:hover::before {
+            left: 100%;
+        }
+
+        .link-upload-area:hover {
+            border-color: var(--secondary-color);
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.2);
+        }
+
+        .upload-icon {
+            font-size: 4.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+        }
+
+        .supported-platforms {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .platform-badges {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .platform-badges .badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--dark-color);
+            font-weight: 600;
+            padding: 1rem 2rem;
+            border-radius: 10px 10px 0 0;
+            margin-right: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-tabs .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: var(--primary-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(-50%);
+        }
+
+        .nav-tabs .nav-link:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+
+        .nav-tabs .nav-link:hover::before {
+            width: 80%;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-tabs .nav-link.active::before {
+            width: 100%;
+            background: white;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 32px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 102, 255, 0.3);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 102, 255, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            transition: all 0.1s ease;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 32px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-success:hover::before {
+            left: 100%;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-success:active {
+            transform: translateY(0);
+            transition: all 0.1s ease;
+        }
+
+        .results-section {
+            padding: 2rem;
+            display: none;
+            animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: var(--gray-300);
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .prediction-badge {
+            font-size: 1.125rem;
+            padding: 0.75rem 1.75rem;
+            border-radius: 12px;
+            font-weight: 700;
+            letter-spacing: 0.025em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: badgePulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+        }
+
+        .prediction-real {
+            background: var(--success-color);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+        }
+
+        .prediction-fake {
+            background: var(--danger-color);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+        }
+
+        @keyframes badgePulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .confidence-bar {
+            background: var(--gray-200);
+            border-radius: 12px;
+            height: 24px;
+            overflow: hidden;
+            margin: 1rem 0;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .confidence-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .confidence-real {
+            background: linear-gradient(90deg, var(--success-color), #34d399);
+        }
+
+        .confidence-fake {
+            background: linear-gradient(90deg, var(--danger-color), #f87171);
+        }
+
+        .face-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .face-card {
+            background: var(--light-color);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .face-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .face-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+            position: relative;
+        }
+
+        .spinner::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border: 2px solid transparent;
+            border-top: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite reverse;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .error-message {
+            background: var(--danger-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .info-section {
+            background: var(--info-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 5px 15px rgba(23, 162, 184, 0.3);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .footer {
+            background: var(--gray-900);
+            color: var(--gray-300);
+            padding: 2.5rem;
+            text-align: center;
+            border-top: 1px solid var(--gray-800);
+        }
+
+        .footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        .report-section {
+            background: var(--light-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .report-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .report-icon {
+            font-size: 2rem;
+            color: var(--info-color);
+            margin-bottom: 1rem;
+            animation: iconFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .nav-tabs {
+            border-bottom: 1px solid var(--gray-200);
+            margin-bottom: 2rem;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--gray-600);
+            font-weight: 500;
+            padding: 1rem 2rem;
+            border-radius: 0;
+            margin-right: 0;
+            transition: all 0.2s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+            background: transparent;
+            border-bottom-color: var(--gray-300);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background: transparent;
+            border-bottom-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            border: 1px solid var(--gray-300);
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+            outline: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+                border-radius: 16px;
+            }
+            
+            .header {
+                padding: 2rem 1.5rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .upload-section {
+                padding: 2rem 1rem;
+            }
+            
+            .upload-area {
+                padding: 2.5rem 1.5rem;
+            }
+
+            .result-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="header">
+                <h1><i class="fas fa-shield-alt"></i> Deepfake Detection</h1>
+                <p>Advanced AI-Powered Media Analysis for Detecting Deepfake Videos and Images</p>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs mb-4" id="uploadTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-upload" type="button" role="tab">
+                            <i class="fas fa-upload"></i> Upload File
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="link-tab" data-bs-toggle="tab" data-bs-target="#link-upload" type="button" role="tab">
+                            <i class="fas fa-link"></i> Social Media Link
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="uploadTabContent">
+                    <!-- File Upload Tab -->
+                    <div class="tab-pane fade show active" id="file-upload" role="tabpanel">
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <h3>Upload Media File</h3>
+                            <p class="text-muted">
+                                Drag and drop your video or image file here, or click to browse
+                            </p>
+                            <p class="text-muted small">
+                                Supported formats: JPG, PNG, GIF, MP4, AVI, MOV, MKV, WMV (Max 100MB)
+                            </p>
+                            <input type="file" id="fileInput" class="file-input" accept="image/*,video/*">
+                            <button id="chooseBtn" class="btn btn-primary" type="button">
+                                <i class="fas fa-folder-open"></i> Choose File
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Social Media Link Tab -->
+                    <div class="tab-pane fade" id="link-upload" role="tabpanel">
+                        <div class="link-upload-area">
+                            <div class="upload-icon">
+                                <i class="fas fa-share-alt"></i>
+                            </div>
+                            <h3>Analyze Social Media Content</h3>
+                            <p class="text-muted">
+                                Paste a link from Instagram Reels, YouTube Shorts, or TikTok
+                            </p>
+                            <div class="input-group mb-3">
+                                <input type="url" class="form-control" id="socialMediaUrl" 
+                                       placeholder="https://instagram.com/reel/... or https://youtube.com/shorts/... or https://tiktok.com/@user/video/...">
+                                <button class="btn btn-primary" type="button" id="analyzeLinkBtn">
+                                    <i class="fas fa-search"></i> Analyze
+                                </button>
+                            </div>
+                            <div class="supported-platforms">
+                                <p class="text-muted small">
+                                    <strong>Supported Platforms:</strong>
+                                </p>
+                                <div class="platform-badges">
+                                    <span class="badge bg-danger me-2">
+                                        <i class="fab fa-instagram"></i> Instagram Reels
+                                    </span>
+                                    <span class="badge bg-danger me-2">
+                                        <i class="fab fa-youtube"></i> YouTube Shorts
+                                    </span>
+                                    <span class="badge bg-dark">
+                                        <i class="fab fa-tiktok"></i> TikTok
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <h4>Analyzing Media...</h4>
+                    <p class="text-muted">This may take a few moments depending on file size</p>
+                </div>
+
+                <!-- Error Message -->
+                <div class="error-message" id="errorMessage" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="errorText"></span>
+                </div>
+
+                <!-- Info Message -->
+                <div class="info-section" id="infoMessage" style="display: none;">
+                    <i class="fas fa-info-circle"></i>
+                    <span id="infoText"></span>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection">
+                <div class="result-card">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3><i class="fas fa-chart-bar"></i> Analysis Results</h3>
+                            <div class="mb-3">
+                                <strong>File:</strong> <span id="fileName"></span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Overall Prediction:</strong>
+                                <span class="prediction-badge" id="overallPrediction"></span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Confidence:</strong>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" id="confidenceFill"></div>
+                                </div>
+                                <span id="confidenceText"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-number" id="numFaces">0</div>
+                                    <div class="stat-label">Faces Detected</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="numFrames">0</div>
+                                    <div class="stat-label">Frames Analyzed</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Download Section -->
+                <div class="report-section">
+                    <div class="report-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <h4>Download Professional Report</h4>
+                    <p class="text-muted">
+                        Generate a comprehensive PDF report with detailed analysis, charts, and technical details.
+                        Perfect for academic research, professional documentation, and legal purposes.
+                    </p>
+                    <button id="downloadReportBtn" class="btn btn-success" onclick="downloadReport()">
+                        <i class="fas fa-download"></i> Download Report (PDF)
+                    </button>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            Report includes: Analysis results, visualizations, technical details, and disclaimers
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Face Analysis Results -->
+                <div class="result-card" id="faceAnalysisCard" style="display: none;">
+                    <h4><i class="fas fa-user"></i> Face Analysis</h4>
+                    <div class="face-grid" id="faceGrid"></div>
+                </div>
+
+                <!-- Video Analysis Results -->
+                <div class="result-card" id="videoAnalysisCard" style="display: none;">
+                    <h4><i class="fas fa-video"></i> Video Analysis</h4>
+                    <div id="videoAnalysis"></div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p>&copy; 2025 Deepfake Detection Project. Built with AI and ❤️</p>
+                <p class="small">
+                    This tool uses advanced machine learning to detect deepfake media.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Global variables to store analysis data
+        let currentAnalysisData = null;
+        let currentImageData = null;
+        let currentFilename = null;
+
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const loading = document.getElementById('loading');
+        const resultsSection = document.getElementById('resultsSection');
+        const errorMessage = document.getElementById('errorMessage');
+        const infoMessage = document.getElementById('infoMessage');
+        const chooseBtn = document.getElementById('chooseBtn');
+        const analyzeLinkBtn = document.getElementById('analyzeLinkBtn');
+        const socialMediaUrl = document.getElementById('socialMediaUrl');
+
+        // Drag and Drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // Only trigger file dialog from the button to avoid double prompts
+        chooseBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // Social Media Link Analysis
+        analyzeLinkBtn.addEventListener('click', () => {
+            const url = socialMediaUrl.value.trim();
+            if (url) {
+                analyzeSocialMediaLink(url);
+            } else {
+                showError('Please enter a valid social media URL');
+            }
+        });
+
+        // Allow Enter key to trigger analysis
+        socialMediaUrl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const url = socialMediaUrl.value.trim();
+                if (url) {
+                    analyzeSocialMediaLink(url);
+                } else {
+                    showError('Please enter a valid social media URL');
+                }
+            }
+        });
+
+        function handleFile(file) {
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 
+                                'video/mp4', 'video/avi', 'video/mov', 'video/quicktime'];
+            
+            if (!allowedTypes.includes(file.type)) {
+                showError('Please select a valid image or video file.');
+                return;
+            }
+
+            // Validate file size (100MB)
+            if (file.size > 100 * 1024 * 1024) {
+                showError('File size must be less than 100MB.');
+                return;
+            }
+
+            // Upload file
+            uploadFile(file);
+        }
+
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show loading
+            showLoading();
+            hideError();
+            hideInfo();
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    // Store data for report generation
+                    currentAnalysisData = data;
+                    currentFilename = data.filename;
+                    
+                    // Get image data for report
+                    if (data.face_predictions && data.face_predictions.length > 0) {
+                        currentImageData = data.face_predictions[0].face_image;
+                    }
+                    
+                    showResults(data);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('An error occurred while processing the file. Please try again.');
+                console.error('Error:', error);
+            });
+        }
+
+        function analyzeSocialMediaLink(url) {
+            // Show loading
+            showLoading();
+            hideError();
+            hideInfo();
+
+            // Update loading message for social media analysis
+            const loadingText = document.querySelector('#loading h4');
+            if (loadingText) {
+                loadingText.textContent = 'Downloading and Analyzing Social Media Content...';
+            }
+
+            fetch('/analyze_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    // Store data for report generation
+                    currentAnalysisData = data;
+                    currentFilename = data.filename;
+                    
+                    // Get image data for report (from first frame if available)
+                    if (data.frame_predictions && data.frame_predictions.length > 0 && 
+                        data.frame_predictions[0].faces && data.frame_predictions[0].faces.length > 0) {
+                        currentImageData = data.frame_predictions[0].faces[0].face_image;
+                    }
+                    
+                    showResults(data);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('An error occurred while analyzing the social media link. Please try again.');
+                console.error('Error:', error);
+            });
+        }
+
+        function downloadReport() {
+            if (!currentAnalysisData) {
+                showError('No analysis data available. Please analyze an image first.');
+                return;
+            }
+
+            const downloadBtn = document.getElementById('downloadReportBtn');
+            const originalText = downloadBtn.innerHTML;
+            
+            // Show loading state
+            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Report...';
+            downloadBtn.disabled = true;
+
+            // Prepare data for report generation
+            const reportData = {
+                analysis: {
+                    prediction: currentAnalysisData.overall_prediction,
+                    confidence: currentAnalysisData.overall_confidence,
+                    num_faces: currentAnalysisData.num_faces,
+                    brightness: currentAnalysisData.metrics.brightness,
+                    contrast: currentAnalysisData.metrics.contrast,
+                    sharpness: currentAnalysisData.metrics.sharpness
+                },
+                image_data: currentImageData || '',
+                filename: currentFilename || 'unknown.jpg'
+            };
+
+            // Generate and download report
+            fetch('/download_report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(reportData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                } else {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Failed to generate report');
+                    });
+                }
+            })
+            .then(blob => {
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `deepfake_report_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                // Show success message
+                showInfo('Report downloaded successfully!');
+            })
+            .catch(error => {
+                showError(`Failed to download report: ${error.message}`);
+                console.error('Report generation error:', error);
+            })
+            .finally(() => {
+                // Restore button state
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+            });
+        }
+
+        function showLoading() {
+            loading.style.display = 'block';
+            loading.style.opacity = '0';
+            
+            // Trigger reflow
+            loading.offsetHeight;
+            
+            // Animate in
+            loading.style.transition = 'opacity 0.3s ease';
+            loading.style.opacity = '1';
+            
+            resultsSection.style.display = 'none';
+        }
+
+        function hideLoading() {
+            loading.style.transition = 'opacity 0.2s ease';
+            loading.style.opacity = '0';
+            
+            setTimeout(() => {
+                loading.style.display = 'none';
+            }, 200);
+        }
+
+        function showError(message) {
+            errorMessage.style.display = 'block';
+            errorMessage.style.opacity = '0';
+            errorMessage.style.transform = 'translateX(30px)';
+            
+            // Trigger reflow
+            errorMessage.offsetHeight;
+            
+            // Animate in
+            errorMessage.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            errorMessage.style.opacity = '1';
+            errorMessage.style.transform = 'translateX(0)';
+            
+            document.getElementById('errorText').textContent = message;
+        }
+
+        function hideError() {
+            errorMessage.style.transition = 'all 0.3s ease';
+            errorMessage.style.opacity = '0';
+            errorMessage.style.transform = 'translateX(30px)';
+            
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 300);
+        }
+
+        function showInfo(message) {
+            infoMessage.style.display = 'block';
+            infoMessage.style.opacity = '0';
+            infoMessage.style.transform = 'translateX(30px)';
+            
+            // Trigger reflow
+            infoMessage.offsetHeight;
+            
+            // Animate in
+            infoMessage.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            infoMessage.style.opacity = '1';
+            infoMessage.style.transform = 'translateX(0)';
+            
+            document.getElementById('infoText').textContent = message;
+        }
+
+        function hideInfo() {
+            infoMessage.style.transition = 'all 0.3s ease';
+            infoMessage.style.opacity = '0';
+            infoMessage.style.transform = 'translateX(30px)';
+            
+            setTimeout(() => {
+                infoMessage.style.display = 'none';
+            }, 300);
+        }
+
+        function showResults(data) {
+            // Add staggered animation delay for smooth appearance
+            resultsSection.style.display = 'block';
+            resultsSection.style.opacity = '0';
+            resultsSection.style.transform = 'translateY(30px)';
+            
+            // Trigger reflow
+            resultsSection.offsetHeight;
+            
+            // Animate in
+            resultsSection.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            resultsSection.style.opacity = '1';
+            resultsSection.style.transform = 'translateY(0)';
+            
+            // Set file name with source info if available
+            let fileName = data.filename;
+            if (data.source_platform && data.source_url) {
+                const platformIcon = {
+                    'instagram': 'fab fa-instagram',
+                    'youtube': 'fab fa-youtube',
+                    'tiktok': 'fab fa-tiktok'
+                }[data.source_platform] || 'fas fa-link';
+                
+                fileName = `<i class="${platformIcon}"></i> ${data.source_platform.toUpperCase()} - ${fileName}`;
+            }
+            document.getElementById('fileName').innerHTML = fileName;
+            
+            // Set overall prediction
+            const predictionElement = document.getElementById('overallPrediction');
+            predictionElement.textContent = data.overall_prediction;
+            predictionElement.className = `prediction-badge ${data.overall_prediction.toLowerCase() === 'fake' ? 'prediction-fake' : 'prediction-real'}`;
+            
+            // Set confidence
+            const confidence = (data.overall_confidence * 100).toFixed(1);
+            document.getElementById('confidenceText').textContent = `${confidence}%`;
+            
+            const confidenceFill = document.getElementById('confidenceFill');
+            confidenceFill.style.width = `${confidence}%`;
+            confidenceFill.className = `confidence-fill ${data.overall_prediction.toLowerCase() === 'fake' ? 'confidence-fake' : 'confidence-real'}`;
+            
+            // Set stats
+            if (data.file_type === 'image') {
+                document.getElementById('numFaces').textContent = data.num_faces || 0;
+                document.getElementById('numFrames').textContent = '1';
+                
+                // Show face analysis
+                if (data.face_predictions && data.face_predictions.length > 0) {
+                    showFaceAnalysis(data.face_predictions);
+                }
+            } else if (data.file_type === 'video') {
+                document.getElementById('numFaces').textContent = data.total_faces || 0;
+                document.getElementById('numFrames').textContent = data.num_frames || 0;
+                
+                // Show video analysis
+                if (data.frame_predictions && data.frame_predictions.length > 0) {
+                    showVideoAnalysis(data.frame_predictions);
+                }
+                
+                // Show video info if available
+                if (data.video_info) {
+                    showVideoInfo(data.video_info);
+                }
+            }
+
+            // Show source information if available
+            if (data.source_url) {
+                showSourceInfo(data);
+            }
+        }
+
+        function showSourceInfo(data) {
+            // Add source information to the results
+            const resultCard = document.querySelector('.result-card');
+            if (resultCard && data.source_url) {
+                const sourceInfo = document.createElement('div');
+                sourceInfo.className = 'mb-3';
+                sourceInfo.innerHTML = `
+                    <strong>Source:</strong> 
+                    <a href="${data.source_url}" target="_blank" class="text-decoration-none">
+                        <i class="fas fa-external-link-alt"></i> ${data.source_url}
+                    </a>
+                `;
+                
+                // Insert after the file name
+                const fileNameElement = document.getElementById('fileName').parentElement;
+                fileNameElement.parentNode.insertBefore(sourceInfo, fileNameElement.nextSibling);
+            }
+        }
+
+        function showFaceAnalysis(facePredictions) {
+            const faceAnalysisCard = document.getElementById('faceAnalysisCard');
+            const faceGrid = document.getElementById('faceGrid');
+            
+            faceGrid.innerHTML = '';
+            
+            facePredictions.forEach((face, index) => {
+                const faceCard = document.createElement('div');
+                faceCard.className = 'face-card';
+                
+                const confidence = (face.confidence * 100).toFixed(1);
+                const fakeProb = (face.fake_probability * 100).toFixed(1);
+                
+                faceCard.innerHTML = `
+                    <img src="data:image/jpeg;base64,${face.face_image}" class="face-image" alt="Face ${index + 1}">
+                    <div class="prediction-badge ${face.prediction.toLowerCase() === 'fake' ? 'prediction-fake' : 'prediction-real'}">
+                        ${face.prediction}
+                    </div>
+                    <p class="mt-2 mb-1"><strong>Confidence:</strong> ${confidence}%</p>
+                    <p class="small text-muted">Fake Probability: ${fakeProb}%</p>
+                `;
+                
+                faceGrid.appendChild(faceCard);
+            });
+            
+            faceAnalysisCard.style.display = 'block';
+            document.getElementById('videoAnalysisCard').style.display = 'none';
+        }
+
+        function showVideoAnalysis(framePredictions) {
+            const videoAnalysisCard = document.getElementById('videoAnalysisCard');
+            const videoAnalysis = document.getElementById('videoAnalysis');
+            
+            let html = '<div class="row">';
+            
+            framePredictions.forEach((frame, frameIndex) => {
+                const timestamp = frame.timestamp ? frame.timestamp.toFixed(2) : '0.00';
+                const confidence = (frame.confidence * 100).toFixed(1);
+                
+                html += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <strong>Frame ${frame.frame_id + 1}</strong>
+                                <small class="text-muted float-end">${timestamp}s</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    <span class="prediction-badge ${frame.prediction.toLowerCase() === 'fake' ? 'prediction-fake' : 'prediction-real'}">
+                                        ${frame.prediction}
+                                    </span>
+                                    <small class="text-muted d-block">Confidence: ${confidence}%</small>
+                                </div>
+                `;
+                
+                if (frame.faces && frame.faces.length > 0) {
+                    html += '<div class="mt-2"><strong>Faces:</strong></div>';
+                    frame.faces.forEach((face, faceIndex) => {
+                        const faceConfidence = (face.confidence * 100).toFixed(1);
+                        const fakeProb = (face.fake_probability * 100).toFixed(1);
+                        
+                        html += `
+                            <div class="mb-2">
+                                <span class="prediction-badge ${face.prediction.toLowerCase() === 'fake' ? 'prediction-fake' : 'prediction-real'}">
+                                    Face ${face.face_id + 1}: ${face.prediction}
+                                </span>
+                                <small class="text-muted d-block">Confidence: ${faceConfidence}% | Fake Prob: ${fakeProb}%</small>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<div class="text-muted">No faces detected in this frame</div>';
+                }
+                
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            videoAnalysis.innerHTML = html;
+            
+            videoAnalysisCard.style.display = 'block';
+            document.getElementById('faceAnalysisCard').style.display = 'none';
+        }
+
+        function showVideoInfo(videoInfo) {
+            // Add video info to the stats section
+            const statsGrid = document.querySelector('.stats-grid');
+            if (statsGrid) {
+                const videoInfoHtml = `
+                    <div class="stat-card">
+                        <div class="stat-number">${videoInfo.total_frames || 0}</div>
+                        <div class="stat-label">Total Frames</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${videoInfo.fps ? videoInfo.fps.toFixed(1) : '0'}</div>
+                        <div class="stat-label">FPS</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${videoInfo.duration ? videoInfo.duration.toFixed(1) : '0'}s</div>
+                        <div class="stat-label">Duration</div>
+                    </div>
+                `;
+                statsGrid.innerHTML += videoInfoHtml;
+            }
+        }
+
+        // Health check on page load
+        window.addEventListener('load', () => {
+            fetch('/health')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.model_loaded === false) {
+                        showInfo('Model is still loading. Please wait a moment before uploading files.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Health check failed:', error);
+                });
+        });
+    </script>
+</body>
+</html>
